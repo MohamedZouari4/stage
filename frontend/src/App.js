@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import StockManagement from './components/StockManagement';
 import StockQuery from './components/StockQuery';
+import ArticlesDepotsList from './components/ArticlesDepotsList';
 import './App.css';
 
 function App() {
@@ -27,6 +28,12 @@ function App() {
           >
             Stock Query
           </button>
+          <button 
+            className={`tab ${activeTab === 'lists' ? 'active' : ''}`}
+            onClick={() => setActiveTab('lists')}
+          >
+            Articles & Depots
+          </button>
         </div>
 
         <div className={`tab-content ${activeTab === 'management' ? 'active' : ''}`}>
@@ -35,6 +42,10 @@ function App() {
 
         <div className={`tab-content ${activeTab === 'query' ? 'active' : ''}`}>
           <StockQuery />
+        </div>
+
+        <div className={`tab-content ${activeTab === 'lists' ? 'active' : ''}`}>
+          <ArticlesDepotsList />
         </div>
       </div>
     </div>

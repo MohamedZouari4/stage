@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { addStock, removeStock, fetchArticles, fetchDepots } from '../api';
 
 const StockManagement = () => {
+  const [articles, setArticles] = useState([]);
+  const [depots, setDepots] = useState([]);
   const [formData, setFormData] = useState({
     articleId: '',
     depotId: '',
@@ -10,6 +12,20 @@ const StockManagement = () => {
   });
   const [message, setMessage] = useState('');
   const [messageType, setMessageType] = useState('');
+
+  useEffect(() => {
+    const loadRefs = async () => {
+      try {
+        const [arts, deps] = await Promise.all([fetchArticles(), fetchDepots()]);
+        setArticles(arts);
+        setDepots(deps);
+      } catch (e) {
+        setMessage('Failed to load reference data');
+        setMessageType('error');
+      }
+    };
+    loadRefs();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -22,8 +38,13 @@ const StockManagement = () => {
   const handleAddStock = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/stock', formData);
-      setMessage(response.data);
+      await addStock({
+        articleId: Number(formData.articleId),
+        depotId: Number(formData.depotId),
+        qte: Number(formData.qte),
+        datePeremption: formData.datePeremption
+      });
+      setMessage('Stock added successfully');
       setMessageType('success');
       setFormData({ articleId: '', depotId: '', qte: '', datePeremption: '' });
     } catch (error) {
@@ -35,12 +56,12 @@ const StockManagement = () => {
   const handleRemoveStock = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put('/api/stock', {
-        articleId: formData.articleId,
-        depotId: formData.depotId,
-        qte: formData.qte
+      await removeStock({
+        articleId: Number(formData.articleId),
+        depotId: Number(formData.depotId),
+        qte: Number(formData.qte)
       });
-      setMessage(response.data);
+      setMessage('Stock removed successfully');
       setMessageType('success');
       setFormData({ articleId: '', depotId: '', qte: '', datePeremption: '' });
     } catch (error) {
@@ -63,27 +84,35 @@ const StockManagement = () => {
         <h3>Add Stock</h3>
         <form onSubmit={handleAddStock}>
           <div className="form-group">
-            <label htmlFor="articleId">Article ID:</label>
-            <input
-              type="number"
+            <label htmlFor="articleId">Article:</label>
+            <select
               id="articleId"
               name="articleId"
               value={formData.articleId}
               onChange={handleInputChange}
               required
-            />
+            >
+              <option value="">Select article</option>
+              {articles.map(a => (
+                <option key={a.idArticle} value={a.idArticle}>{a.designationArticle}</option>
+              ))}
+            </select>
           </div>
           
           <div className="form-group">
-            <label htmlFor="depotId">Depot ID:</label>
-            <input
-              type="number"
+            <label htmlFor="depotId">Depot:</label>
+            <select
               id="depotId"
               name="depotId"
               value={formData.depotId}
               onChange={handleInputChange}
               required
-            />
+            >
+              <option value="">Select depot</option>
+              {depots.map(d => (
+                <option key={d.idDepot} value={d.idDepot}>{d.nomDepot}</option>
+              ))}
+            </select>
           </div>
           
           <div className="form-group">
@@ -120,27 +149,35 @@ const StockManagement = () => {
         <h3>Remove Stock</h3>
         <form onSubmit={handleRemoveStock}>
           <div className="form-group">
-            <label htmlFor="removeArticleId">Article ID:</label>
-            <input
-              type="number"
+            <label htmlFor="removeArticleId">Article:</label>
+            <select
               id="removeArticleId"
               name="articleId"
               value={formData.articleId}
               onChange={handleInputChange}
               required
-            />
+            >
+              <option value="">Select article</option>
+              {articles.map(a => (
+                <option key={a.idArticle} value={a.idArticle}>{a.designationArticle}</option>
+              ))}
+            </select>
           </div>
           
           <div className="form-group">
-            <label htmlFor="removeDepotId">Depot ID:</label>
-            <input
-              type="number"
+            <label htmlFor="removeDepotId">Depot:</label>
+            <select
               id="removeDepotId"
               name="depotId"
               value={formData.depotId}
               onChange={handleInputChange}
               required
-            />
+            >
+              <option value="">Select depot</option>
+              {depots.map(d => (
+                <option key={d.idDepot} value={d.idDepot}>{d.nomDepot}</option>
+              ))}
+            </select>
           </div>
           
           <div className="form-group">
